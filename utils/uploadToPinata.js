@@ -6,7 +6,6 @@ require("dotenv").config()
 const pinataApiKey = process.env.PINATA_API || ""
 const pinataSecretApiKey = process.env.PINATA_API_SECRET || ""
 const pinata = pinataSDK(pinataApiKey, pinataSecretApiKey)
-
 async function storeImages(imagesFilePath) {
     const fullImagesPath = path.resolve(imagesFilePath) //gets the full path
     //like /home/alexk/wsl/ubuntu  ..... you get the idea
