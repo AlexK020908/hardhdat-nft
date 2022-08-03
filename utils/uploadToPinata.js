@@ -5,7 +5,10 @@ const path = require("path")
 require("dotenv").config()
 const pinataApiKey = process.env.PINATA_API || ""
 const pinataSecretApiKey = process.env.PINATA_API_SECRET || ""
-const pinata = pinataSDK(pinataApiKey, pinataSecretApiKey)
+const pinata = pinataSDK(
+    "b396772bda2be2198b27",
+    "29a4d093de41196b4d91a141886d999acaa3f7738beafb18d9b3dffa96bb2748"
+)
 async function storeImages(imagesFilePath) {
     const fullImagesPath = path.resolve(imagesFilePath) //gets the full path
     //like /home/alexk/wsl/ubuntu  ..... you get the idea
@@ -18,8 +21,8 @@ async function storeImages(imagesFilePath) {
         const readableStream = fs.createReadStream(`${fullImagesPath}/${files[fileIndex]}`)
         //we stream all the data in the images, images are full of bytes and data
         try {
-            const reponses = await pinata.pinFileToIPFS(readableStream)
-            reponses.push(reponses)
+            const reponse = await pinata.pinFileToIPFS(readableStream)
+            reponses.push(reponse)
         } catch (error) {
             console.error(error)
         }
@@ -28,4 +31,16 @@ async function storeImages(imagesFilePath) {
     return { reponses, files }
 }
 
-module.exports = { storeImages }
+async function storeTokenUriMetadata(metadata) {
+    //we are going to poplate the metadata in the deploy script based on
+    //which image we get
+
+    try {
+        const response = await pinata.pinJSONToIPFS(metadata)
+        return response
+    } catch (error) {
+        console.error(error)
+    }
+    return null
+}
+module.exports = { storeImages, storeTokenUriMetadata }

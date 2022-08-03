@@ -77,6 +77,7 @@ contract randomlpfsNft is VRFConsumerBaseV2, ERC721URIStorage {
         //if the moded value is 0 --> in btw 0 and 10 we get pug
         //if the modded value if 12 --> we get a shiba --> btw 10 and 30 ...
         Breed breed = getBreedFromModdedRNG(moddedRNG);
+        s_tokenCounter++;
         _setTokenURI(newTokenId, s_dogTokenUris[uint256(breed)]);
         _safeMint(onwer, newTokenId);
 
@@ -133,5 +134,9 @@ contract randomlpfsNft is VRFConsumerBaseV2, ERC721URIStorage {
 
     function getTokenCounter() public view returns (uint256) {
         return s_tokenCounter;
+    }
+
+    function getGaslane() public view returns (bytes32) {
+        return i_gasLane;
     }
 }
