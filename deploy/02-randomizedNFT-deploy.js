@@ -2,6 +2,13 @@ const { network, ethers } = require("hardhat")
 const { developmentChains, networkConfig } = require("../helper-hardhat-config")
 const { verify } = require("../utils/verify")
 const { storeImages, storeTokenUriMetadata } = require("../utils/uploadToPinata")
+
+let tokenUris = [
+    "ipfs://QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo",
+    "ipfs://QmYQC5aGZu2PTH8XzbJrbDnvhj3gVs7ya33H9mqUNvST3d",
+    "ipfs://QmZYmH5iDbD6v3U2ixoVAjioSzvWJszDzYdbeCLquGSpVm",
+]
+
 const metaDataTemplate = {
     name: "",
     description: "",
@@ -13,6 +20,7 @@ const metaDataTemplate = {
         },
     ],
 } //this is for the metadata of the images
+
 module.exports = async function ({ deployments, getNamedAccounts }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
@@ -22,7 +30,11 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
     let subID
 
     const fundamount = await ethers.utils.parseUnits("10")
-    let tokenuris
+
+    if (process.env.UPLOAD_TO_PINDATA == "true") {
+        tokenUris = await handleTokenUris() //this function uploads our code to pinaata
+    }
+
     if (chainID == 31337) {
         log("local network detected, deploying to local network")
         const mock = await ethers.getContract("VRFCoordinatorV2Mock", deployer)
@@ -41,9 +53,7 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
     }
 
     log("--------------------------------")
-    if (process.env.UPLOAD_TO_PINDATA == "true") {
-        tokenuris = await handleTokenUris() //this function uploads our code to pinaata
-    }
+
     //for the images, we need the ipfs hashes programattically
     /*
 
@@ -55,15 +65,17 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
 
     console.log("getting args...........")
     const arguments = [
-        networkConfig[chainID]["vrfCoordinator"],
+        VRfaddress,
         subID,
         networkConfig[chainID]["callbackGasLimit"],
         networkConfig[chainID]["gasLane"],
-        tokenuris,
+        tokenUris,
         networkConfig[chainID]["mintFee"],
     ]
+
     console.log(`deploying contract with args`)
     console.log(`deployer addresss = ${deployer}`)
+
     //randomlpfsNft
     const randomIpfsNft = await deploy("randomlpfsNft", {
         from: deployer,
@@ -71,11 +83,12 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     })
-    console.log(`verifying ! with nft address ${randomIpfsNft.address}`)
+
     if (chainID != 31337 && process.env.ETH_API_KEY) {
+        console.log(`verifying ! with nft address ${randomIpfsNft.address}`)
         verify(randomIpfsNft.address, arguments)
+        console.log(`verified`)
     }
-    console.log(`verified`)
 }
 
 async function handleTokenUris() {
