@@ -22,7 +22,11 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
     let subID
 
     const fundamount = await ethers.utils.parseUnits("10")
-    let tokenuris
+    let tokenUris = [
+        "ipfs://QmeaKXvbjjnttzu4ttAzjDQ2wHR97uCX84LyyAyLMtLagm",
+        "ipfs://QmdMxiRBPe1FwSacZyEwgjhYTcETtEhuYfbB6MHzKrKtax",
+        "ipfs://QmNar3TbzUL2zidUcevQnpudrRmqaE3Coy3hRHtJwHghod",
+    ]
     if (chainID == 31337) {
         log("local network detected, deploying to local network")
         const mock = await ethers.getContract("VRFCoordinatorV2Mock", deployer)
@@ -42,7 +46,7 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
 
     log("--------------------------------")
     if (process.env.UPLOAD_TO_PINDATA == "true") {
-        tokenuris = await handleTokenUris() //this function uploads our code to pinaata
+        tokenUris = await handleTokenUris() //this function uploads our code to pinaata
     }
     //for the images, we need the ipfs hashes programattically
     /*
@@ -55,11 +59,11 @@ module.exports = async function ({ deployments, getNamedAccounts }) {
 
     console.log("getting args...........")
     const arguments = [
-        networkConfig[chainID]["vrfCoordinator"],
+        VRfaddress,
         subID,
         networkConfig[chainID]["callbackGasLimit"],
         networkConfig[chainID]["gasLane"],
-        tokenuris,
+        tokenUris,
         networkConfig[chainID]["mintFee"],
     ]
     console.log(`deploying contract with args`)

@@ -36,7 +36,7 @@ contract randomlpfsNft is VRFConsumerBaseV2, ERC721URIStorage {
     //users have to pay for nft
     //onwer of contract can withdraw eth
     event NFTRequested(uint256 indexed requestId, address sender);
-    event NFTminted(Breed dogBreed, address onwer);
+    event NftMinted(Breed dogBreed, address onwer);
 
     constructor(
         address VRFCoordinatorV2,
@@ -68,21 +68,32 @@ contract randomlpfsNft is VRFConsumerBaseV2, ERC721URIStorage {
         emit NFTRequested(requestId, msg.sender);
     }
 
-    //since we need a random nummber --> use yarn to add chainlink->then import it
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
-        //we can not call safemint here because it wil give it to the chainlink, instead we want a mapping... requestid -> address
-        address onwer = map[requestId];
-        uint256 newTokenId = s_tokenCounter;
-        uint256 moddedRNG = randomWords[0] % MAX_CHANCE_VALUE;
-        //if the moded value is 0 --> in btw 0 and 10 we get pug
-        //if the modded value if 12 --> we get a shiba --> btw 10 and 30 ...
-        Breed breed = getBreedFromModdedRNG(moddedRNG);
-        s_tokenCounter++;
-        _setTokenURI(newTokenId, s_dogTokenUris[uint256(breed)]);
-        _safeMint(onwer, newTokenId);
-
-        emit NFTminted(breed, onwer);
+        address dogOwner = map[requestId];
+        uint256 newItemId = s_tokenCounter;
+        s_tokenCounter = s_tokenCounter + 1;
+        uint256 moddedRng = randomWords[0] % MAX_CHANCE_VALUE;
+        Breed dogBreed = getBreedFromModdedRNG(moddedRng);
+        _safeMint(dogOwner, newItemId);
+        _setTokenURI(newItemId, s_dogTokenUris[uint256(dogBreed)]);
+        emit NftMinted(dogBreed, dogOwner);
     }
+
+    // //since we need a random nummber --> use yarn to add chainlink->then import it
+    // function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    //     //we can not call safemint here because it wil give it to the chainlink, instead we want a mapping... requestid -> address
+    //     address onwer = map[requestId];
+    //     uint256 newTokenId = s_tokenCounter;
+    //     uint256 moddedRNG = randomWords[0] % MAX_CHANCE_VALUE;
+    //     //if the moded value is 0 --> in btw 0 and 10 we get pug
+    //     //if the modded value if 12 --> we get a shiba --> btw 10 and 30 ...
+    //     Breed breed = getBreedFromModdedRNG(moddedRNG);
+    //     s_tokenCounter++;
+    //     _setTokenURI(newTokenId, s_dogTokenUris[uint256(breed)]);
+    //     _safeMint(onwer, newTokenId);
+
+    //     emit NFTminted(breed, onwer);
+    // }
 
     function withdraw() public onlyOnwer {
         (bool callSucess, ) = payable(i_onwer).call{value: address(this).balance}("");

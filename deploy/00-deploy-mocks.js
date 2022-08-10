@@ -3,6 +3,8 @@
 const { network } = require("hardhat")
 const DECIMALS = "8"
 const INITIAL_PRICE = "100000000000" // 1000
+const BASE_FEE = "250000000000000000" // 0.25 is this the premium in LINK?
+const GAS_PRICE_LINK = 1e9 // link per gas, is this the gas lane? // 0.000000001 LINK per gas
 module.exports = async ({ getNamedAccounts, deployments }) => {
     //const { getNamedAccounts, deployment } = hre we are pulling them out, doing the same thing as what we did above in the brackets
     const { deploy, log } = deployments
@@ -19,8 +21,22 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             contract: "VRFCoordinatorV2Mock",
             from: deployer,
             log: true,
-            args: [DECIMALS, INITIAL_PRICE], //cuz mockv3aggrefator takes two arguments
+            args: [BASE_FEE, GAS_PRICE_LINK], //cuz mockv3aggrefator takes two arguments
         })
+
+        await deploy("MockV3Aggregator", {
+            contract: "MockV3Aggregator",
+            from: deployer,
+            log: true,
+            args: [DECIMALS, INITIAL_PRICE],
+        })
+
+        /*
+
+  constructor(
+    uint8 _decimals,
+    int256 _initialAnswer
+        */
     }
 
     log("deployed")
